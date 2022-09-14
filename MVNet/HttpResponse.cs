@@ -620,50 +620,6 @@ namespace MVNet
             return memoryStream;
         }
 
-        /// <summary>
-        /// Skips the body of the message. This method should be called if no message body is required.
-        /// </summary>
-        /// 
-        /// <exception cref="System.InvalidOperationException">Calling a method from an erroneous response.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public void None()
-        {
-            #region Status check
-
-            if (HasError)
-            {
-                throw new InvalidOperationException(Constants.InvalidOperationException_HttpResponse_HasError);
-            }
-
-            #endregion
-
-            if (MessageBodyLoaded)
-                return;
-
-            if (ConnectionClosed())
-                _request.Dispose();
-            else
-            {
-                try
-                {
-                    var source = GetMessageBodySource();
-
-                    foreach (var unused in source) { }
-                }
-                catch (Exception ex)
-                {
-                    HasError = true;
-
-                    if (ex is IOException || ex is InvalidOperationException)
-                        throw NewHttpException(Constants.HttpException_FailedReceiveMessageBody, ex);
-
-                    throw;
-                }
-            }
-
-            MessageBodyLoaded = true;
-        }
-
         #region Working with cookies
 
         /// <summary>
@@ -741,76 +697,6 @@ namespace MVNet
         #endregion
 
         #endregion
-
-
-        // Loads the response and returns the size of the response in bytes.
-        internal long LoadResponse(HttpMethod method, bool trackMiddleHeaders)
-        {
-            Method = method;
-            Address = _request.Address;
-
-            HasError = false;
-            MessageBodyLoaded = false;
-            KeepAliveTimeout = null;
-            MaximumKeepAliveRequests = null;
-
-            if (trackMiddleHeaders && _headers.Count > 0)
-            {
-                foreach (string key in _headers.Keys)
-                    MiddleHeaders[key] = _headers[key];
-            }
-            _headers.Clear();
-
-            if (_request.UseCookies)
-            {
-                Cookies = _request.Cookies != null && !_request.Cookies.IsLocked
-                    ? _request.Cookies
-                    : new CookieStorage(ignoreInvalidCookie: _request.IgnoreInvalidCookie);
-            }
-
-            if (_receiverHelper == null)
-                _receiverHelper = new ReceiverHelper(_request.TcpClient.ReceiveBufferSize);
-
-            _receiverHelper.Init(_request.ClientStream);
-
-            try
-            {
-                ReceiveStartingLine();
-                ReceiveHeaders();
-
-                RedirectAddress = GetLocation();
-                CharacterSet = GetCharacterSet();
-                ContentLength = GetContentLength();
-                ContentType = GetContentType();
-
-                KeepAliveTimeout = GetKeepAliveTimeout();
-                MaximumKeepAliveRequests = GetKeepAliveMax();
-            }
-            catch (Exception ex)
-            {
-                HasError = true;
-
-                if (ex is IOException)
-                    throw NewHttpException(Constants.HttpException_FailedReceiveResponse, ex);
-
-                throw;
-            }
-
-            // If a response came without a message body.
-            if (ContentLength == 0 || Method == HttpMethod.Head || StatusCode == HttpStatusCode.Continue || StatusCode == HttpStatusCode.NoContent || StatusCode == HttpStatusCode.NotModified)
-            {
-                _messageBody = new byte[0];
-                MessageBodyLoaded = true;
-            }
-
-            long responseSize = _receiverHelper.Position;
-
-            if (ContentLength > 0)
-                responseSize += ContentLength;
-
-            return responseSize;
-        }
-
 
         #region Methods (private)
 
@@ -1408,5 +1294,74 @@ namespace MVNet
         }
 
         #endregion
+
+
+        // Loads the response and returns the size of the response in bytes.
+        internal long LoadResponse(HttpMethod method, bool trackMiddleHeaders)
+        {
+            Method = method;
+            Address = _request.Address;
+
+            HasError = false;
+            MessageBodyLoaded = false;
+            KeepAliveTimeout = null;
+            MaximumKeepAliveRequests = null;
+
+            if (trackMiddleHeaders && _headers.Count > 0)
+            {
+                foreach (string key in _headers.Keys)
+                    MiddleHeaders[key] = _headers[key];
+            }
+            _headers.Clear();
+
+            if (_request.UseCookies)
+            {
+                Cookies = _request.Cookies != null && !_request.Cookies.IsLocked
+                    ? _request.Cookies
+                    : new CookieStorage(ignoreInvalidCookie: _request.IgnoreInvalidCookie);
+            }
+
+            if (_receiverHelper == null)
+                _receiverHelper = new ReceiverHelper(_request.TcpClient.ReceiveBufferSize);
+
+            _receiverHelper.Init(_request.ClientStream);
+
+            try
+            {
+                ReceiveStartingLine();
+                ReceiveHeaders();
+
+                RedirectAddress = GetLocation();
+                CharacterSet = GetCharacterSet();
+                ContentLength = GetContentLength();
+                ContentType = GetContentType();
+
+                KeepAliveTimeout = GetKeepAliveTimeout();
+                MaximumKeepAliveRequests = GetKeepAliveMax();
+            }
+            catch (Exception ex)
+            {
+                HasError = true;
+
+                if (ex is IOException)
+                    throw NewHttpException(Constants.HttpException_FailedReceiveResponse, ex);
+
+                throw;
+            }
+
+            // If a response came without a message body.
+            if (ContentLength == 0 || Method == HttpMethod.Head || StatusCode == HttpStatusCode.Continue || StatusCode == HttpStatusCode.NoContent || StatusCode == HttpStatusCode.NotModified)
+            {
+                _messageBody = new byte[0];
+                MessageBodyLoaded = true;
+            }
+
+            long responseSize = _receiverHelper.Position;
+
+            if (ContentLength > 0)
+                responseSize += ContentLength;
+
+            return responseSize;
+        }
     }
 }

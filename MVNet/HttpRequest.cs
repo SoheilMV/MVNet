@@ -219,11 +219,6 @@ namespace MVNet
         public Uri Address { get; private set; }
 
         /// <summary>
-        /// Returns the last response from the HTTP server received by this instance of the class.
-        /// </summary>
-        public HttpResponse Response { get; private set; }
-
-        /// <summary>
         /// Gets or sets the proxy client.
         /// </summary>
         /// <value>Default value — <see langword="null"/>.</value>
@@ -705,65 +700,6 @@ namespace MVNet
         /// </summary>
         public HttpRequest()
         {
-            Init();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the class <see cref="HttpRequest"/>.
-        /// </summary>
-        /// <param name="baseAddress">The address of the Internet resource that is used if a relative address is specified in the request.</param>
-        /// <exception cref="System.ArgumentNullException">Parameter value <paramref name="baseAddress"/> equals <see langword="null"/>.</exception>
-        /// <exception cref="System.ArgumentException">
-        /// Parameter value <paramref name="baseAddress"/> is an empty string.
-        /// -or-
-        /// Parameter value <paramref name="baseAddress"/> is not an absolute URI.
-        /// </exception>
-        /// <exception cref="System.ArgumentException">Parameter value <paramref name="baseAddress"/> is not an absolute URI.</exception>
-        public HttpRequest(string baseAddress)
-        {
-            #region Parameter Check
-
-            if (baseAddress == null)
-                throw new ArgumentNullException(nameof(baseAddress));
-
-            if (baseAddress.Length == 0)
-                throw ExceptionHelper.EmptyString(nameof(baseAddress));
-
-            #endregion
-
-            if (!baseAddress.StartsWith("http"))
-                baseAddress = "http://" + baseAddress;
-
-            var uri = new Uri(baseAddress);
-
-            if (!uri.IsAbsoluteUri)
-                throw new ArgumentException(Constants.ArgumentException_OnlyAbsoluteUri, nameof(baseAddress));
-
-            BaseAddress = uri;
-
-            Init();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the class <see cref="HttpRequest"/>.
-        /// </summary>
-        /// <param name="baseAddress">The address of the Internet resource that is used if a relative address is specified in the request.</param>
-        /// <exception cref="System.ArgumentNullException">Parameter value <paramref name="baseAddress"/> equals <see langword="null"/>.</exception>
-        /// <exception cref="System.ArgumentException">Parameter value <paramref name="baseAddress"/> is not an absolute URI.</exception>
-        public HttpRequest(Uri baseAddress)
-        {
-            #region Parameter Check
-
-            if (baseAddress == null)
-                throw new ArgumentNullException(nameof(baseAddress));
-
-            if (!baseAddress.IsAbsoluteUri)
-                throw new ArgumentException(Constants.ArgumentException_OnlyAbsoluteUri, nameof(baseAddress));
-
-            #endregion
-
-            BaseAddress = baseAddress;
-
             Init();
         }
 
@@ -2988,6 +2924,7 @@ namespace MVNet
             KeepTemporaryHeadersOnRedirect = true;
             AcceptEncoding = "gzip,deflate";
             IgnoreInvalidCookie = false;
+            IgnoreProtocolErrors = true;
 
             KeepAlive = true;
             AllowAutoRedirect = true;
@@ -2999,12 +2936,16 @@ namespace MVNet
 
             SslCertificateValidatorCallback = new RemoteCertificateValidationCallback((s, c, ch, e) => { return true; });
 
-            Version version = Assembly.GetEntryAssembly().GetName().Version;
-            UserAgent = $"MVNet({version.Major}.{version.Minor}.{version.Build})";
+            Version version = GetVersion();
+            UserAgent = $"MVNet({version.Major}.{version.Minor})";
 
             ClientCertificates = new X509CertificateCollection();
+        }
 
-            Response = new HttpResponse(this);
+        public Version GetVersion()
+        {
+            Assembly Reference = typeof(HttpRequest).Assembly;
+            return Reference.GetName().Version;
         }
 
         private static Uri GetRequestAddress(Uri baseAddress, Uri address)
@@ -3026,12 +2967,11 @@ namespace MVNet
 
         private HttpResponse Request(HttpMethod method, Uri address, HttpContent content)
         {
+            HttpResponse response = new HttpResponse(this);
             while (true)
             {
                 _method = method;
                 _content = content;
-
-                CloseConnectionIfNeeded();
 
                 var previousAddress = Address;
                 Address = address;
@@ -3039,7 +2979,7 @@ namespace MVNet
                 bool createdNewConnection;
                 try
                 {
-                    createdNewConnection = TryCreateConnectionOrUseExisting(address, previousAddress);
+                    createdNewConnection = TryCreateConnectionOrUseExisting(response, address, previousAddress);
                 }
                 catch (HttpException)
                 {
@@ -3078,7 +3018,7 @@ namespace MVNet
 
                 try
                 {
-                    ReceiveResponseHeaders(method);
+                    ReceiveResponseHeaders(response, method);
                 }
                 catch (HttpException ex)
                 {
@@ -3095,29 +3035,29 @@ namespace MVNet
 
                 #endregion
 
-                Response.ReconnectCount = _reconnectCount;
+                response.ReconnectCount = _reconnectCount;
 
                 _reconnectCount = 0;
                 _keepAliveReconnected = false;
                 _whenConnectionIdle = DateTime.Now;
 
                 if (!IgnoreProtocolErrors)
-                    CheckStatusCode(Response.StatusCode);
+                    CheckStatusCode(response);
 
                 #region Forwarding
 
-                if (AllowAutoRedirect && Response.HasRedirect)
+                if (AllowAutoRedirect && response.HasRedirect)
                 {
                     if (++_redirectionCount > _maximumAutomaticRedirections)
                         throw NewHttpException(Constants.HttpException_LimitRedirections);
 
-                    if (Response.HasExternalRedirect)
-                        return Response;
+                    if (response.HasExternalRedirect)
+                        return response;
 
                     ClearRequestData(true);
 
                     method = HttpMethod.Get;
-                    address = Response.RedirectAddress;
+                    address = response.RedirectAddress;
                     content = null;
                     continue;
                 }
@@ -3126,30 +3066,13 @@ namespace MVNet
 
                 #endregion
 
-                Response.ReadAsBytes();
+                response.ReadAsBytes();
 
-                return Response;
+                return response;
             }
         }
 
-        private void CloseConnectionIfNeeded()
-        {
-            bool hasConnection = TcpClient != null && ClientStream != null;
-
-            if (!hasConnection || Response.HasError || Response.MessageBodyLoaded)
-                return;
-
-            try
-            {
-                Response.None();
-            }
-            catch (HttpException)
-            {
-                Dispose();
-            }
-        }
-
-        private bool TryCreateConnectionOrUseExisting(Uri address, Uri previousAddress)
+        private bool TryCreateConnectionOrUseExisting(HttpResponse response, Uri address, Uri previousAddress)
         {
             var proxy = GetProxy();
 
@@ -3163,31 +3086,31 @@ namespace MVNet
                 previousAddress.Scheme != address.Scheme;
 
             // Fix by Igor Vacil'ev
-            bool connectionClosedByServer = Response.ContainsHeader("Connection") && Response["Connection"] == "close";
+            bool connectionClosedByServer = response.ContainsHeader("Connection") && response["Connection"] == "close";
 
             // If you need to create a new connection.
-            if (hasConnection && !proxyChanged && !addressChanged && !Response.HasError &&
-                !KeepAliveLimitIsReached() && !connectionClosedByServer)
+            if (hasConnection && !proxyChanged && !addressChanged && !response.HasError &&
+                !KeepAliveLimitIsReached(response) && !connectionClosedByServer)
                 return false;
 
             _currentProxy = proxy;
 
             Dispose();
-            CreateConnection(address);
+            CreateConnection(response, address);
             return true;
         }
 
-        private bool KeepAliveLimitIsReached()
+        private bool KeepAliveLimitIsReached(HttpResponse response)
         {
             if (!KeepAlive)
                 return false;
 
-            int maximumKeepAliveRequests = Response.MaximumKeepAliveRequests ?? _maximumKeepAliveRequests;
+            int maximumKeepAliveRequests = response.MaximumKeepAliveRequests ?? _maximumKeepAliveRequests;
 
             if (_keepAliveRequestCount >= maximumKeepAliveRequests)
                 return true;
 
-            int keepAliveTimeout = Response.KeepAliveTimeout ?? _keepAliveTimeout;
+            int keepAliveTimeout = response.KeepAliveTimeout ?? _keepAliveTimeout;
 
             var timeLimit = _whenConnectionIdle.AddMilliseconds(keepAliveTimeout);
 
@@ -3225,12 +3148,12 @@ namespace MVNet
                 _content.WriteTo(ClientStream);
         }
 
-        private void ReceiveResponseHeaders(HttpMethod method)
+        private void ReceiveResponseHeaders(HttpResponse response, HttpMethod method)
         {
             _canReportBytesReceived = false;
 
             _bytesReceived = 0;
-            _totalBytesReceived = Response.LoadResponse(method, EnableMiddleHeaders);
+            _totalBytesReceived = response.LoadResponse(method, EnableMiddleHeaders);
 
             _canReportBytesReceived = true;
         }
@@ -3253,18 +3176,18 @@ namespace MVNet
             return Request(_method, Address, _content);
         }
 
-        private void CheckStatusCode(HttpStatusCode statusCode)
+        private void CheckStatusCode(HttpResponse response)
         {
-            int statusCodeNum = (int)statusCode;
+            int statusCodeNum = (int)response.StatusCode;
 
             if (statusCodeNum >= 400 && statusCodeNum < 500)
             {
-                throw new HttpException(string.Format(Constants.HttpException_ClientError, statusCodeNum), HttpExceptionStatus.ProtocolError, Response.StatusCode);
+                throw new HttpException(string.Format(Constants.HttpException_ClientError, statusCodeNum), HttpExceptionStatus.ProtocolError, response.StatusCode);
             }
 
             if (statusCodeNum >= 500)
             {
-                throw new HttpException(string.Format(Constants.HttpException_SeverError, statusCodeNum), HttpExceptionStatus.ProtocolError, Response.StatusCode);
+                throw new HttpException(string.Format(Constants.HttpException_SeverError, statusCodeNum), HttpExceptionStatus.ProtocolError, response.StatusCode);
             }
         }
 
@@ -3291,7 +3214,6 @@ namespace MVNet
                 var checkIp = IPAddress.Parse("127.0.0.1");
                 var ips = Dns.GetHostAddresses(Address.Host);
 
-                // ReSharper disable once LoopCanBeConvertedToQuery
                 foreach (var ip in ips)
                 {
                     if (ip.Equals(checkIp))
@@ -3401,7 +3323,7 @@ namespace MVNet
             return tcpClient;
         }
 
-        private void CreateConnection(Uri address)
+        private void CreateConnection(HttpResponse response, Uri address)
         {
             TcpClient = CreateTcpConnection(address.Host, address.Port);
             ClientNetworkStream = TcpClient.GetStream();
@@ -3424,13 +3346,13 @@ namespace MVNet
                     ClientStream = sslStream;
                     sslStream.AuthenticateAsClient(sslOptions);
 
-                    Response.CipherAlgorithm = sslStream.CipherAlgorithm;
-                    Response.HashAlgorithm = sslStream.HashAlgorithm;
-                    Response.TlsCipher = sslStream.NegotiatedCipherSuite;
-                    Response.CipherStrength = sslStream.CipherStrength;
-                    Response.SslProtocol = sslStream.SslProtocol;
-                    Response.LocalCertificate = sslStream.LocalCertificate;
-                    Response.RemoteCertificate = sslStream.RemoteCertificate;
+                    response.CipherAlgorithm = sslStream.CipherAlgorithm;
+                    response.HashAlgorithm = sslStream.HashAlgorithm;
+                    response.TlsCipher = sslStream.NegotiatedCipherSuite;
+                    response.CipherStrength = sslStream.CipherStrength;
+                    response.SslProtocol = sslStream.SslProtocol;
+                    response.LocalCertificate = sslStream.LocalCertificate;
+                    response.RemoteCertificate = sslStream.RemoteCertificate;
 
                 }
                 catch (Exception ex)
