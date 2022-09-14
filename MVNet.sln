@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVNet", "MVNet\MVNet.csproj", "{2035181A-D7E7-418F-BB76-9CDF206F965D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVNet.Test", "MVNet.Test\MVNet.Test.csproj", "{2E2E9796-41D9-4D95-8F5D-24E5C7368DBE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2035181A-D7E7-418F-BB76-9CDF206F965D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2035181A-D7E7-418F-BB76-9CDF206F965D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2035181A-D7E7-418F-BB76-9CDF206F965D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2035181A-D7E7-418F-BB76-9CDF206F965D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E2E9796-41D9-4D95-8F5D-24E5C7368DBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E2E9796-41D9-4D95-8F5D-24E5C7368DBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E2E9796-41D9-4D95-8F5D-24E5C7368DBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E2E9796-41D9-4D95-8F5D-24E5C7368DBE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {42FBA41B-0A6A-4C0A-8DCD-45C9CFB29E91}
+	EndGlobalSection
+EndGlobal
