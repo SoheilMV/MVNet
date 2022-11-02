@@ -479,5 +479,54 @@ namespace MVNet
         }
 
         #endregion
+
+        #region Static methods (internal)
+
+        internal static byte[] ToByteArray(this string[] input)
+        {
+            using (var stream = new MemoryStream())
+            {
+                using (var writer = new BinaryWriter(stream, Encoding.UTF8))
+                {
+                    var rows = input.GetLength(0);
+                    writer.Write(rows);
+                    for (int i = 0; i < rows; i++)
+                    {
+                        writer.Write(input[i]);
+                    }
+                    writer.Flush();
+                    return stream.ToArray();
+                }
+            }
+        }
+
+        internal static string[] ToStringArray(this byte[] input)
+        {
+            using (var stream = new MemoryStream(input))
+            {
+                using (var reader = new BinaryReader(stream, Encoding.UTF8))
+                {
+                    var rows = reader.ReadInt32();
+                    var result = new string[rows];
+                    for (int i = 0; i < rows; i++)
+                    {
+                        result[i] = reader.ReadString();
+                    }
+                    return result;
+                }
+            }
+        }
+
+        internal static byte[] ToByteArray(this int input)
+        {
+            return BitConverter.GetBytes(input);
+        }
+
+        internal static int ToInt32(this byte[] input)
+        {
+            return BitConverter.ToInt32(input, 0);
+        }
+
+        #endregion
     }
 }

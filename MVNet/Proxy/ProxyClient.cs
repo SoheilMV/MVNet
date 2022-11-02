@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Security;
+﻿using System.Web;
 using System.Text;
-using System.Threading;
+using System.Security;
+using System.Net.Sockets;
 
 namespace MVNet
 {
@@ -239,7 +237,9 @@ namespace MVNet
             {"socks4", ProxyType.Socks4},
             {"socks4a", ProxyType.Socks4A},
             {"socks5", ProxyType.Socks5},
-            {"socks", ProxyType.Socks5}
+            {"socks", ProxyType.Socks5},
+            {"ap",  ProxyType.Azadi},
+            {"AP",  ProxyType.Azadi}
         };
 
         /// <summary>
@@ -297,14 +297,47 @@ namespace MVNet
 
             string username = null;
             string password = null;
+            string secret = null;
 
-            if (values.Length >= 3)
-                username = values[2];
+            if (proxyType == ProxyType.Azadi)
+            {
+                if (values.Length == 3)
+                {
+                    if (values.Length >= 3)
+                    {
+                        secret = values[2];
+                        if (proxyType == ProxyType.Azadi && string.IsNullOrEmpty(secret))
+                            throw new FormatException(Constants.Azadi_EmptySecret);
+                    }
+                }
+                else if (values.Length == 5)
+                {
+                    if (values.Length >= 3)
+                        username = values[2];
 
-            if (values.Length >= 4)
-                password = values[3];
+                    if (values.Length >= 4)
+                        password = values[3];
 
-            return ProxyHelper.CreateProxyClient(proxyType, host, port, username, password);
+                    if (values.Length >= 5)
+                    {
+                        secret = values[4];
+                        if (proxyType == ProxyType.Azadi && string.IsNullOrEmpty(secret))
+                            throw new FormatException(Constants.Azadi_EmptySecret);
+                    }
+                }
+                else
+                    throw new FormatException(nameof(proxyAddress));
+            }
+            else
+            {
+                if (values.Length >= 3)
+                    username = values[2];
+
+                if (values.Length >= 4)
+                    password = values[3];
+            }
+
+            return ProxyHelper.CreateProxyClient(proxyType, host, port, username, password, secret);
         }
 
         /// <inheritdoc cref="Parse(MVNet.ProxyType,string)"/>
@@ -321,6 +354,17 @@ namespace MVNet
                 return null;
 
             var proxyType = ProxyProtocol[proto];
+            if (proxyType == ProxyType.Azadi)
+            {
+                var data = Convert.FromBase64String(HttpUtility.UrlDecode(proxy[1])).ToStringArray();
+                if (data.Length == 3)
+                    proxy[1] = $"{data[0]}:{data[1]}:{data[2]}";
+                else if (data.Length == 5)
+                    proxy[1] = $"{data[0]}:{data[1]}:{data[2]}:{data[3]}:{data[4]}";
+                else
+                    return null;
+            }
+
             return Parse(proxyType, proxy[1]);
         }
 
@@ -342,36 +386,15 @@ namespace MVNet
 
             #endregion
 
-            var values = proxyAddress.Split(':');
-
-            int port = 0;
-            string host = values[0];
-
-            if (values.Length >= 2 &&
-                (!int.TryParse(values[1], out port) || !ExceptionHelper.ValidateTcpPort(port)))
-            {
-                return false;
-            }
-
-            string username = null;
-            string password = null;
-
-            if (values.Length >= 3)
-                username = values[2];
-
-            if (values.Length >= 4)
-                password = values[3];
-
             try
             {
-                result = ProxyHelper.CreateProxyClient(proxyType, host, port, username, password);
+                result = Parse(proxyType, proxyAddress);
+                return true;
             }
-            catch (InvalidOperationException)
+            catch
             {
                 return false;
             }
-
-            return true;
         }
 
         /// <inheritdoc cref="TryParse(MVNet.ProxyType,string,out MVNet.ProxyClient)"/>
@@ -380,15 +403,19 @@ namespace MVNet
         /// <returns>Value <see langword="true"/>, if parameter <paramref name="protoProxyAddress"/> converted successfully, otherwise <see langword="false"/>.</returns>
         public static bool TryParse(string protoProxyAddress, out ProxyClient result)
         {
-            var proxy = protoProxyAddress.Split(new[] {"://"}, StringSplitOptions.RemoveEmptyEntries);
-            if (proxy.Length < 2 || !ProxyProtocol.ContainsKey(proxy[0]))
+            try
+            {
+                result = Parse(protoProxyAddress);
+                if (result != null)
+                    return true;
+                else
+                    return false;
+            }
+            catch
             {
                 result = null;
                 return false;
             }
-
-            var proxyType = ProxyProtocol[proxy[0]];
-            return TryParse(proxyType, proxy[1], out result);
         }
 
         #endregion

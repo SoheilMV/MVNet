@@ -178,7 +178,6 @@ namespace MVNet
             return curTcpClient;
         }
 
-
         #region Methods (private)
 
         private void InitialNegotiation(Stream nStream)
@@ -385,7 +384,7 @@ namespace MVNet
                     break;
 
                 default:
-                    errorMessage = Constants.Socks_UnknownError;
+                    errorMessage = Constants.UnknownError;
                     break;
             }
 

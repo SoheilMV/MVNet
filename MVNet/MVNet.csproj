@@ -4,10 +4,10 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>1.1</AssemblyVersion>
-    <FileVersion>1.1</FileVersion>
+    <AssemblyVersion></AssemblyVersion>
+    <FileVersion></FileVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.1</Version>
+    <Version>2.1</Version>
     <PackageReadmeFile></PackageReadmeFile>
     <Authors>Soheil MV</Authors>
     <Company>MVSoft</Company>
@@ -16,7 +16,7 @@
     <PackageProjectUrl>https://github.com/SoheilMV/MVNet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/SoheilMV/MVNet</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <PackageTags>http,https,net,request,response,proxy,socks4,socks4a,socks5</PackageTags>
+    <PackageTags>http,https,net,request,response,proxy,socks4,socks4a,socks5,azadi</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2883,16 +2883,10 @@ namespace MVNet
             if (!disposing || TcpClient == null)
                 return;
 
-            ClientStream?.Flush();
-            ClientStream?.Dispose();
-            ClientStream = null;
-
-            ClientNetworkStream?.Flush();
-            ClientNetworkStream?.Dispose();
-            ClientNetworkStream = null;
-
             TcpClient.Close();
             TcpClient = null;
+            ClientStream = null;
+            ClientNetworkStream = null;
 
             _keepAliveRequestCount = 0;
         }

@@ -28,7 +28,7 @@ namespace MVNet
 
         /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the class <see cref="T:Leaf.xNet.ProxyException" /> given error message.
+        /// Initializes a new instance of the class <see cref="T:MVNet.ProxyException" /> given error message.
         /// </summary>
         /// <param name="message">Error message explaining the reason for the exception.</param>
         /// <param name="innerException">The exception that threw the current exception, or the value <see langword="null" />.</param>
@@ -38,7 +38,7 @@ namespace MVNet
 
         /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the class <see cref="!:Leaf.xNet.Net.ProxyException" /> the specified error message and client proxy.
+        /// Initializes a new instance of the class <see cref="!:MVNet.ProxyException" /> the specified error message and client proxy.
         /// </summary>
         /// <param name="message">Error message explaining the reason for the exception.</param>
         /// <param name="proxyClient">The proxy client in which the error occurred.</param>

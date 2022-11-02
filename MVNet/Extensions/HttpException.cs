@@ -46,7 +46,7 @@ namespace MVNet
 
         /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the class <see cref="T:Leaf.xNet.HttpException" /> given error message.
+        /// Initializes a new instance of the class <see cref="T:MVNet.HttpException" /> given error message.
         /// </summary>
         /// <param name="message">Error message explaining the reason for the exception.</param>
         /// <param name="innerException">The exception that threw the current exception, or the value <see langword="null" />.</param>
@@ -56,7 +56,7 @@ namespace MVNet
 
         /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the class <see cref="T:Leaf.xNet.HttpException" /> the specified error message and response status code.
+        /// Initializes a new instance of the class <see cref="T:MVNet.HttpException" /> the specified error message and response status code.
         /// </summary>
         /// <param name="message">Error message explaining the reason for the exception.</param>
         /// <param name="status">HTTP Status of Thrown Exception</param>
@@ -73,7 +73,7 @@ namespace MVNet
 
         /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the class <see cref="T:Leaf.xNet.HttpException" /> given instances <see cref="T:System.Runtime.Serialization.SerializationInfo" /> и <see cref="T:System.Runtime.Serialization.StreamingContext" />.
+        /// Initializes a new instance of the class <see cref="T:MVNet.HttpException" /> given instances <see cref="T:System.Runtime.Serialization.SerializationInfo" /> и <see cref="T:System.Runtime.Serialization.StreamingContext" />.
         /// </summary>
         /// <param name="serializationInfo">Class instance <see cref="T:System.Runtime.Serialization.SerializationInfo" />, which contains the information required to serialize a new instance of the class <see cref="T:MVNet.HttpException" />.</param>
         /// <param name="streamingContext">Class instance <see cref="T:System.Runtime.Serialization.StreamingContext" />, containing the source of the serialized stream associated with the new instance of the class <see cref="T:MVNet.HttpException" />.</param>

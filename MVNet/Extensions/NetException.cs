@@ -19,7 +19,7 @@ namespace MVNet
 
         /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the class <see cref="T:Leaf.xNet.NetException" /> given error message.
+        /// Initializes a new instance of the class <see cref="T:MVNet.NetException" /> given error message.
         /// </summary>
         /// <param name="message">Error message explaining the reason for the exception.</param>
         /// <param name="innerException">The exception that threw the current exception, or the value <see langword="null" />.</param>

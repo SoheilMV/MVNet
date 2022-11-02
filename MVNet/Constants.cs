@@ -52,7 +52,6 @@
         public const string ProxyException_ReceivedWrongStatusCode = "Received invalid status code '{0}' on '{1}' proxy.";
         public const string ProxyException_Socks5_FailedAuthOn = "Failed to authenticate with the proxy server '{0}'.";
         public const string ProxyException_WaitDataTimeout = "It turned out the wait time data from the proxy server '{0}'.";
-        public const string Socks_UnknownError = "Unknown error.";
         public const string Socks4_CommandReplyRequestRejectedCannotConnectToIdentd = "The request failed, because things are not running idents (or not available from the server).";
         public const string Socks4_CommandReplyRequestRejectedDifferentIdentd = "The request failed because client's idents could not confirm the user ID in the query.";
         public const string Socks4_CommandReplyRequestRejectedOrFailed = "Query rejected or erroneous.";
@@ -65,6 +64,12 @@
         public const string Socks5_CommandReplyHostUnreachable = "Host unreachable.";
         public const string Socks5_CommandReplyNetworkUnreachable = "The network is not available.";
         public const string Socks5_CommandReplyTTLExpired = "Expired TTL.";
+        public const string Azadi_EmptySecret = "The secret cannot be empty.";
+        public const string Azadi_FormatIsIncorrect = "The proxy format is incorrect.";
+        public const string Azadi_CommandReplyAuthWrong = "Invalid username or password.";
+        public const string Azadi_CommandReplyHostIncorrect = "The host entered is incorrect.";
+        public const string Azadi_CommandReplyConnectionRefused = "Connection refused.";
         public const string StringExtensions_Substrings_Invalid_Index = "Invalid start index for substrings.";
+        public const string UnknownError = "Unknown error.";
     }
 }

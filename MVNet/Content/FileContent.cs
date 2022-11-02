@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-namespace MVNet
+﻿namespace MVNet
 {
     /// <inheritdoc />
     /// <summary>
@@ -11,7 +8,7 @@ namespace MVNet
     {
         /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the class <see cref="T:Leaf.xNet.FileContent" /> and opens the file stream.
+        /// Initializes a new instance of the class <see cref="T:MVNet.FileContent" /> and opens the file stream.
         /// </summary>
         /// <param name="pathToContent">The path to the file that will become the content of the request body.</param>
         /// <param name="bufferSize">The buffer size in bytes for the stream.</param>

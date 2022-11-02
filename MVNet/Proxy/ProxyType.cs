@@ -8,6 +8,7 @@
         HTTP,
         Socks4,
         Socks4A,
-        Socks5
+        Socks5,
+        Azadi
     }
 }

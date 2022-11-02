@@ -1,5 +1,5 @@
 # MVNet
-**MVNet** - provides HTTP/HTTPS, Socks 4A, Socks 4, Socks 5.  
+**MVNet** - provides HTTP/HTTPS, Socks 4A, Socks 4, Socks 5, Azadi.  
 It's a based on [Leaf.xNet](https://github.com/csharp-leaf/Leaf.xNet). And original library [xNet](https://github.com/X-rus/xNet).  
 Usage same like original xNet.
 
@@ -185,14 +185,24 @@ foreach (Cookie cookie in cookies)
 ### Proxy
 Your proxy server:
 ```csharp
-// Type: HTTP/HTTPS 
+// Type: HTTP/HTTPS
 httpRequest.Proxy = HttpProxyClient.Parse("127.0.0.1:8080");
+
 // Type: Socks4
 httpRequest.Proxy = Socks4ProxyClient.Parse("127.0.0.1:9000");
+
 // Type: Socks4a
 httpRequest.Proxy = Socks4aProxyClient.Parse("127.0.0.1:9000");
+
 // Type: Socks5
 httpRequest.Proxy = Socks5ProxyClient.Parse("127.0.0.1:9000");
+
+// Type: Azadi
+httpRequest.Proxy = AzadiProxyClient.Parse("ap://AwAAAAkxMjcuMC4wLjEEOTg5OAZzZWNyZXQ%3d");
+// or
+httpRequest.Proxy = AzadiProxyClient.Parse("127.0.0.1:9898:secret");
+// or
+httpRequest.Proxy = AzadiProxyClient.Parse("127.0.0.1:9898:username:password:secret");
 
 ```
 

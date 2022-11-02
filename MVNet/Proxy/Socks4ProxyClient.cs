@@ -1,8 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Net.Sockets;
+﻿using System.Net;
 using System.Text;
+using System.Net.Sockets;
 
 namespace MVNet
 {
@@ -50,7 +48,7 @@ namespace MVNet
 
         /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the class <see cref="T:Leaf.xNet.Socks4ProxyClient" /> the specified data about the proxy server.
+        /// Initializes a new instance of the class <see cref="T:MVNet.Socks4ProxyClient" /> the specified data about the proxy server.
         /// </summary>
         /// <param name="host">Proxy host.</param>
         /// <param name="port">Proxy port.</param>
@@ -155,7 +153,6 @@ namespace MVNet
             return curTcpClient;
         }
 
-
         #region Methods (internal protected)
 
         private void SendCommand(NetworkStream nStream, byte command, string destinationHost, int destinationPort)
@@ -250,7 +247,7 @@ namespace MVNet
                     break;
 
                 default:
-                    errorMessage = Constants.Socks_UnknownError;
+                    errorMessage = Constants.UnknownError;
                     break;
             }
 
