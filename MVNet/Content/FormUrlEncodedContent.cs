@@ -29,16 +29,16 @@ namespace MVNet
             Init(Utility.ToQueryString(content, valuesUnescaped, keysUnescaped));
         }
 
-        public FormUrlEncodedContent(RequestParams rp)
+        public FormUrlEncodedContent(Parameters parameters)
         {
             #region Parameter Check
 
-            if (rp == null)
-                throw new ArgumentNullException(nameof(rp));
+            if (parameters == null)
+                throw new ArgumentNullException(nameof(parameters));
 
             #endregion
 
-            Init(rp.Query);
+            Init(parameters.Query);
         }
 
         private void Init(string content)

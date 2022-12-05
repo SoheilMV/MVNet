@@ -10,7 +10,7 @@ namespace MVNet
     /// <summary>
     /// Represents a collection of strings that represent query options.
     /// </summary>
-    public class RequestParams : List<KeyValuePair<string, string>>
+    public class Parameters : List<KeyValuePair<string, string>>
     {
         /// <summary>
         /// Query by enumeration of parameters and their values.
@@ -30,7 +30,7 @@ namespace MVNet
         /// <inheritdoc />
         /// <param name="valuesUnescaped">Indicates whether to skip encoding query parameter values.</param>
         /// <param name="keysUnescaped">Specifies whether to skip encoding query parameter names.</param>
-        public RequestParams(bool valuesUnescaped = false, bool keysUnescaped = false)
+        public Parameters(bool valuesUnescaped = false, bool keysUnescaped = false)
         {
             ValuesUnescaped = valuesUnescaped;
             KeysUnescaped = keysUnescaped;
@@ -60,6 +60,21 @@ namespace MVNet
 
                 Add(new KeyValuePair<string, string>(paramName, str));
             }
+        }
+
+        public void Add(string name, string value)
+        {
+            #region Parameter check
+
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (name.Length == 0)
+                throw ExceptionHelper.EmptyString(nameof(name));
+
+            #endregion
+
+            Add(new KeyValuePair<string, string>(name, value));
         }
     }
 }

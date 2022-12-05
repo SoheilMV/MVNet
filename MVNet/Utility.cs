@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
+using System.Reflection;
 
 namespace MVNet
 {
@@ -476,6 +471,12 @@ namespace MVNet
                 return MimeTypes[extension];
             else
                 return "application/octet-stream";
+        }
+
+        public static Version GetVersion()
+        {
+            Assembly Reference = typeof(HttpRequest).Assembly;
+            return Reference.GetName().Version;
         }
 
         #endregion

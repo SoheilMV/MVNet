@@ -5,9 +5,9 @@
 
     try
     {
-        using (HttpRequest req = new HttpRequest())
+        using (HttpRequest req = new HttpRequest("https://www.google.com/"))
         {
-            var res = req.Get("https://httpbin.org/user-agent");
+            var res = req.Get();
             PrintMessage(res);
         }
     }
@@ -27,5 +27,5 @@ void PrintMessage(HttpResponse response)
     Console.WriteLine($"Hash Algorithm : {response.HashAlgorithm.ToString()}");
     Console.WriteLine($"Tls Cipher : {response.TlsCipher.ToString()}");
     Console.WriteLine($"Certificate Name : {response.RemoteCertificate.GetName()}");
-    Console.WriteLine($"Content : {response.ReadAsString().Replace("\n", string.Empty).Replace(" ", string.Empty)}");
+    Console.WriteLine($"Content : {response.ReadAsString()}");
 }

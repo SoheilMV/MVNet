@@ -1,10 +1,11 @@
-﻿using System.IO.Compression;
-using System.Net;
+﻿using System.Net;
+using System.Text;
+using System.Collections;
 using System.Net.Security;
+using System.IO.Compression;
+using System.Text.RegularExpressions;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace MVNet
 {
@@ -375,7 +376,9 @@ namespace MVNet
         /// Returns the cookie generated as a result of the request, or set in <see cref="HttpRequest"/>.
         /// </summary>
         /// <remarks>If cookies have been set in <see cref="HttpRequest"/> and property value <see cref="CookieStorage.IsLocked"/> equals <see langword="true"/>, then new cookies will be created.</remarks>
-        public CookieStorage Cookies { get; private set; }
+        public CookieStorage AllCookies { get; private set; }
+
+        public IEnumerator Cookies { get { return AllCookies.GetCookies(Address).GetEnumerator(); } }
 
         /// <summary>
         /// Returns the idle time of a persistent connection in milliseconds.
@@ -625,33 +628,87 @@ namespace MVNet
         /// <summary>
         /// Determines if the specified cookie is contained at the specified web address.
         /// </summary>
-        /// <param name="url">Resource address.</param>
         /// <param name="name">The name of the cookie.</param>
         /// <returns>Value <see langword="true"/>, if the specified cookies are present, otherwise <see langword="false"/>.</returns>
-        public bool ContainsCookie(string url, string name)
-        {
-            return Cookies != null && Cookies.Contains(url, name);
-        }
-
-        /// <inheritdoc cref="ContainsCookie(string,string)"/>
-        /// <param name="uri">Cookie address</param>
-        public bool ContainsCookie(Uri uri, string name)
-        {
-            return Cookies != null && Cookies.Contains(uri, name);
-        }
-
-        /// <inheritdoc cref="ContainsCookie(string,string)"/>
-        /// <summary>
-        /// Determines if the specified cookie is contained at the address in the response.
-        /// </summary>
         public bool ContainsCookie(string name)
         {
-            return Cookies != null && Cookies.Contains(HasRedirect && !HasExternalRedirect ? RedirectAddress : Address, name);
+            return AllCookies.Contains(Address, name);
+        }
+
+        ///// <inheritdoc cref="ContainsCookie(string,string)"/>
+        ///// <summary>
+        ///// Determines if the specified cookie is contained at the address in the response.
+        ///// </summary>
+        //public bool ContainsCookie(string name)
+        //{
+        //    return Cookies != null && Cookies.Contains(HasRedirect && !HasExternalRedirect ? RedirectAddress : Address, name);
+        //}
+
+        public Cookie GetCookie(string name)
+        {
+            var cookies = Cookies;
+            while (cookies.MoveNext())
+            {
+                Cookie cookie = (Cookie)cookies.Current;
+                if(cookie.Name == name)
+                    return cookie;
+            }
+            return null;
+        }
+
+        public bool TryGetCookie(string name, ref Cookie cookie)
+        {
+            var cookies = Cookies;
+            while (cookies.MoveNext())
+            {
+                Cookie c = (Cookie)cookies.Current;
+                if (c.Name == name)
+                {
+                    cookie = c;
+                    break;
+                }
+                    
+            }
+            if (cookie != null)
+                return true;
+            else
+                return false;
         }
 
         #endregion
 
         #region Working with headers
+
+        public string GetHeader(string name)
+        {
+            #region Parameter Check
+
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (name.Length == 0)
+                throw ExceptionHelper.EmptyString(nameof(name));
+
+            #endregion
+
+            string value = string.Empty;
+            _headers.TryGetValue(name, out value);
+            return value;
+        }
+
+        public string GetHeader(HttpHeader name)
+        {
+            #region Parameter Check
+
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            #endregion
+
+            string value = string.Empty;
+            _headers.TryGetValue(Utility.Headers[name], out value);
+            return value;
+        }
 
         /// <summary>
         /// Determines whether the specified HTTP header is contained.
@@ -775,7 +832,7 @@ namespace MVNet
             if (!_request.UseCookies)
                 return;
 
-            Cookies.Set(_request.Address, headerValue);
+            AllCookies.Set(Address, headerValue);
         }
 
         #endregion
@@ -1166,8 +1223,7 @@ namespace MVNet
             if (string.IsNullOrEmpty(location))
                 return null;
 
-            var baseAddress = _request.Address;
-            Uri.TryCreate(baseAddress, location, out var redirectAddress);
+            Uri.TryCreate(Address, location, out var redirectAddress);
 
             return redirectAddress;
         }
@@ -1314,12 +1370,7 @@ namespace MVNet
             }
             _headers.Clear();
 
-            if (_request.UseCookies)
-            {
-                Cookies = _request.Cookies != null && !_request.Cookies.IsLocked
-                    ? _request.Cookies
-                    : new CookieStorage(ignoreInvalidCookie: _request.IgnoreInvalidCookie);
-            }
+            AllCookies = _request.UseCookies && !_request.Cookies.IsLocked ? _request.Cookies : new CookieStorage(ignoreInvalidCookie: _request.IgnoreInvalidCookie);
 
             if (_receiverHelper == null)
                 _receiverHelper = new ReceiverHelper(_request.TcpClient.ReceiveBufferSize);
