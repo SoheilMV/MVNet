@@ -7,12 +7,12 @@
     <AssemblyVersion></AssemblyVersion>
     <FileVersion></FileVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>2.2</Version>
+    <Version>2.3</Version>
     <PackageReadmeFile></PackageReadmeFile>
     <Authors>Soheil MV</Authors>
     <Company>MVSoft</Company>
     <Description>HTTP and HTTPS library.</Description>
-    <Copyright>© 2022 MVSoft. All rights reserved.</Copyright>
+    <Copyright>© 2022-2023 MVSoft. All rights reserved.</Copyright>
     <PackageProjectUrl>https://github.com/SoheilMV/MVNet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/SoheilMV/MVNet</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>

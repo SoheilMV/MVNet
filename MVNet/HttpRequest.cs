@@ -694,27 +694,35 @@ namespace MVNet
 
         #region Constructors (public)
 
-        public HttpRequest(Uri baseAddress, Uri address)
+        public HttpRequest(Uri baseAddress, Uri address, Parameters parameters = null)
         {
             if (address == null)
                 throw new ArgumentNullException(nameof(address));
 
             BaseAddress = baseAddress;
             Address = address;
+
+            if (parameters != null && !string.IsNullOrEmpty(parameters?.Query))
+            {
+                var uriBuilder = new UriBuilder(address);
+                uriBuilder.Query = string.IsNullOrEmpty(uriBuilder.Query) ? parameters.Query : $"{uriBuilder.Query}&{parameters.Query}";
+                Address = uriBuilder.Uri;
+            }
+
             Init();
         }
 
         /// <summary>
         /// Initializes a new instance of the class <see cref="HttpRequest"/>.
         /// </summary>
-        public HttpRequest(Uri address) : this(null, address)
+        public HttpRequest(Uri address, Parameters parameters = null) : this(null, address, parameters)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the class <see cref="HttpRequest"/>.
         /// </summary>
-        public HttpRequest(string address) : this(new UriBuilder(address).Uri)
+        public HttpRequest(string address, Parameters parameters = null) : this(new UriBuilder(address).Uri, parameters)
         {
         }
 
@@ -727,12 +735,11 @@ namespace MVNet
         /// <summary>
         /// Sends a GET request to an HTTP server.
         /// </summary>
-        /// <param name="parameters">URL parameters, or value <see langword="null"/>.</param>
         /// <returns>An object for downloading a response from an HTTP server.</returns>
         /// <exception cref="MVNet.HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Get(Parameters parameters = null)
+        public HttpResponse Get()
         {
-            return Raw(HttpMethod.Get, parameters, null);
+            return Raw(HttpMethod.Get, null);
         }
 
         #endregion
@@ -742,12 +749,11 @@ namespace MVNet
         /// <summary>
         /// Sends a HEAD request to an HTTP server.
         /// </summary>
-        /// <param name="parameters">URL parameters, or value <see langword="null"/>.</param>
         /// <returns>An object for downloading a response from an HTTP server.</returns>
         /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Head(Parameters parameters = null)
+        public HttpResponse Head()
         {
-            return Raw(HttpMethod.Head, parameters, null);
+            return Raw(HttpMethod.Head, null);
         }
 
         #endregion
@@ -757,12 +763,11 @@ namespace MVNet
         /// <summary>
         /// Sends an OPTIONS request to an HTTP server.
         /// </summary>
-        /// <param name="parameters">URL parameters, or value <see langword="null"/>.</param>
         /// <returns>An object for downloading a response from an HTTP server.</returns>
         /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Options(Parameters parameters = null)
+        public HttpResponse Options()
         {
-            return Raw(HttpMethod.Options, parameters, null);
+            return Raw(HttpMethod.Options, null);
         }
 
         #endregion
@@ -797,7 +802,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Post, null, content);
+            return Raw(HttpMethod.Post, content);
         }
 
         /// <summary>
@@ -816,7 +821,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Post, null, content);
+            return Raw(HttpMethod.Post, content);
         }
 
         /// <summary>
@@ -835,7 +840,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Post, null, content);
+            return Raw(HttpMethod.Post, content);
         }
 
         /// <summary>
@@ -854,7 +859,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Post, null, content);
+            return Raw(HttpMethod.Post, content);
         }
 
         /// <summary>
@@ -873,7 +878,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Post, null, content);
+            return Raw(HttpMethod.Post, content);
         }
 
         /// <summary>
@@ -892,7 +897,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Post, null, content);
+            return Raw(HttpMethod.Post, content);
         }
 
         /// <summary>
@@ -911,214 +916,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Post, null, content);
-        }
-
-        #endregion
-
-        #region UrlParams Support
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-            else if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            #endregion
-
-            return Raw(HttpMethod.Post, parameters, null);
-        }
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters, HttpContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Post, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters, BytesContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Post, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters, StringContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Post, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters, StreamContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Post, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters, FormUrlEncodedContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Post, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters, MultipartContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Post, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters, FileContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Post, parameters, content);
+            return Raw(HttpMethod.Post, content);
         }
 
         #endregion
@@ -1153,7 +951,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Post, null, bytesContent);
+            return Raw(HttpMethod.Post, bytesContent);
         }
 
         /// <summary>
@@ -1187,7 +985,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Post, null, stringContent);
+            return Raw(HttpMethod.Post, stringContent);
         }
 
         /// <summary>
@@ -1218,124 +1016,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Post, null, streamContent);
-        }
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">An array of bytes sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters, byte[] content, string contentType = "application/octet-stream")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var bytesContent = new BytesContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Post, parameters, bytesContent);
-        }
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">The string sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="MVNet.HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters, string content, string contentType = "application/x-www-form-urlencoded")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (content.Length == 0)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var stringContent = new StringContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Post, parameters, stringContent);
-        }
-
-        /// <summary>
-        /// Sends a POST request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">The data stream sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="MVNet.HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Post(Parameters parameters, Stream content, string contentType = "application/octet-stream")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var streamContent = new StreamContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Post, parameters, streamContent);
+            return Raw(HttpMethod.Post, streamContent);
         }
 
         #endregion
@@ -1372,7 +1053,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Patch, null, content);
+            return Raw(HttpMethod.Patch, content);
         }
 
         /// <summary>
@@ -1391,7 +1072,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Patch, null, content);
+            return Raw(HttpMethod.Patch, content);
         }
 
         /// <summary>
@@ -1410,7 +1091,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Patch, null, content);
+            return Raw(HttpMethod.Patch, content);
         }
 
         /// <summary>
@@ -1429,7 +1110,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Patch, null, content);
+            return Raw(HttpMethod.Patch, content);
         }
 
         /// <summary>
@@ -1448,7 +1129,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Patch, null, content);
+            return Raw(HttpMethod.Patch, content);
         }
 
         /// <summary>
@@ -1467,7 +1148,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Post, null, content);
+            return Raw(HttpMethod.Post, content);
         }
 
         /// <summary>
@@ -1486,216 +1167,9 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Post, null, content);
+            return Raw(HttpMethod.Post, content);
         }
 
-
-        #endregion
-
-        #region UrlParams Support
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-            else if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            #endregion
-
-            return Raw(HttpMethod.Patch, parameters, null);
-        }
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters, HttpContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Patch, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters, BytesContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Patch, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters, StringContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Patch, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters, StreamContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Patch, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters, FormUrlEncodedContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Patch, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters, MultipartContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Patch, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters, FileContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Patch, parameters, content);
-        }
 
         #endregion
 
@@ -1729,7 +1203,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Patch, null, bytesContent);
+            return Raw(HttpMethod.Patch, bytesContent);
         }
 
         /// <summary>
@@ -1763,7 +1237,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Patch, null, stringContent);
+            return Raw(HttpMethod.Patch, stringContent);
         }
 
         /// <summary>
@@ -1794,124 +1268,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Patch, null, streamContent);
-        }
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">An array of bytes sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters, byte[] content, string contentType = "application/octet-stream")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var bytesContent = new BytesContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Patch, parameters, bytesContent);
-        }
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">The string sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="MVNet.HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters, string content, string contentType = "application/x-www-form-urlencoded")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (content.Length == 0)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var stringContent = new StringContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Patch, parameters, stringContent);
-        }
-
-        /// <summary>
-        /// Sends a PATCH request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">The data stream sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="MVNet.HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Patch(Parameters parameters, Stream content, string contentType = "application/octet-stream")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var streamContent = new StreamContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Patch, parameters, streamContent);
+            return Raw(HttpMethod.Patch, streamContent);
         }
 
         #endregion
@@ -1948,7 +1305,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Put, null, content);
+            return Raw(HttpMethod.Put, content);
         }
 
         /// <summary>
@@ -1967,7 +1324,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Put, null, content);
+            return Raw(HttpMethod.Put, content);
         }
 
         /// <summary>
@@ -1986,7 +1343,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Put, null, content);
+            return Raw(HttpMethod.Put, content);
         }
 
         /// <summary>
@@ -2005,7 +1362,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Put, null, content);
+            return Raw(HttpMethod.Put, content);
         }
 
         /// <summary>
@@ -2024,7 +1381,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Put, null, content);
+            return Raw(HttpMethod.Put, content);
         }
 
         /// <summary>
@@ -2043,7 +1400,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Put, null, content);
+            return Raw(HttpMethod.Put, content);
         }
 
         /// <summary>
@@ -2062,214 +1419,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Put, null, content);
-        }
-
-        #endregion
-
-        #region UrlParams Support
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-            else if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            #endregion
-
-            return Raw(HttpMethod.Put, parameters, null);
-        }
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters, HttpContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Put, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters, BytesContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Put, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters, StringContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Put, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters, StreamContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Put, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters, FormUrlEncodedContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Put, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters, MultipartContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Put, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters, FileContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Put, parameters, content);
+            return Raw(HttpMethod.Put, content);
         }
 
         #endregion
@@ -2304,7 +1454,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Put, null, bytesContent);
+            return Raw(HttpMethod.Put, bytesContent);
         }
 
         /// <summary>
@@ -2338,7 +1488,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Put, null, stringContent);
+            return Raw(HttpMethod.Put, stringContent);
         }
 
         /// <summary>
@@ -2369,124 +1519,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Put, null, streamContent);
-        }
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">An array of bytes sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters, byte[] content, string contentType = "application/octet-stream")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var bytesContent = new BytesContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Put, parameters, bytesContent);
-        }
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">The string sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="MVNet.HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters, string content, string contentType = "application/x-www-form-urlencoded")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (content.Length == 0)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var stringContent = new StringContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Put, parameters, stringContent);
-        }
-
-        /// <summary>
-        /// Sends a PUT request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">The data stream sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="MVNet.HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Put(Parameters parameters, Stream content, string contentType = "application/octet-stream")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var streamContent = new StreamContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Put, parameters, streamContent);
+            return Raw(HttpMethod.Put, streamContent);
         }
 
         #endregion
@@ -2523,7 +1556,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Delete, null, content);
+            return Raw(HttpMethod.Delete, content);
         }
 
         /// <summary>
@@ -2542,7 +1575,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Delete, null, content);
+            return Raw(HttpMethod.Delete, content);
         }
 
         /// <summary>
@@ -2561,7 +1594,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Delete, null, content);
+            return Raw(HttpMethod.Delete, content);
         }
 
         /// <summary>
@@ -2580,7 +1613,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Delete, null, content);
+            return Raw(HttpMethod.Delete, content);
         }
 
         /// <summary>
@@ -2599,7 +1632,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Delete, null, content);
+            return Raw(HttpMethod.Delete, content);
         }
 
         /// <summary>
@@ -2618,7 +1651,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Delete, null, content);
+            return Raw(HttpMethod.Delete, content);
         }
 
         /// <summary>
@@ -2637,214 +1670,7 @@ namespace MVNet
 
             #endregion
 
-            return Raw(HttpMethod.Delete, null, content);
-        }
-
-        #endregion
-
-        #region UrlParams Support
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-            else if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            #endregion
-
-            return Raw(HttpMethod.Delete, parameters, null);
-        }
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters, HttpContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Delete, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters, BytesContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Delete, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters, StringContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Delete, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Content sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters, StreamContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Delete, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters, FormUrlEncodedContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Delete, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters, MultipartContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Delete, parameters, content);
-        }
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">Request parameters sent to the HTTP server.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters, FileContent content)
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            #endregion
-
-            return Raw(HttpMethod.Delete, parameters, content);
+            return Raw(HttpMethod.Delete, content);
         }
 
         #endregion
@@ -2879,7 +1705,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Delete, null, bytesContent);
+            return Raw(HttpMethod.Delete, bytesContent);
         }
 
         /// <summary>
@@ -2913,7 +1739,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Delete, null, stringContent);
+            return Raw(HttpMethod.Delete, stringContent);
         }
 
         /// <summary>
@@ -2944,124 +1770,7 @@ namespace MVNet
                 ContentType = contentType
             };
 
-            return Raw(HttpMethod.Delete, null, streamContent);
-        }
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">An array of bytes sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters, byte[] content, string contentType = "application/octet-stream")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var bytesContent = new BytesContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Delete, parameters, bytesContent);
-        }
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">The string sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="MVNet.HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters, string content, string contentType = "application/x-www-form-urlencoded")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (content.Length == 0)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var stringContent = new StringContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Delete, parameters, stringContent);
-        }
-
-        /// <summary>
-        /// Sends a DELETE request to an HTTP server.
-        /// </summary>
-        /// <param name="parameters">URL parameters sent to the HTTP server.</param>
-        /// <param name="content">The data stream sent to the HTTP server.</param>
-        /// <param name="contentType">The type of data being sent.</param>
-        /// <returns>An object for downloading a response from an HTTP server.</returns>
-        /// <exception cref="ArgumentNullException">Parameters value equals <see langword="null"/>.</exception>
-        /// <exception cref="MVNet.HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Delete(Parameters parameters, Stream content, string contentType = "application/octet-stream")
-        {
-            #region Parameter Check
-
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (parameters.Query.Length == 0)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (content == null)
-                throw new ArgumentNullException(nameof(content));
-
-            if (contentType == null)
-                throw new ArgumentNullException(nameof(contentType));
-
-            if (contentType.Length == 0)
-                throw new ArgumentNullException(nameof(contentType));
-
-            #endregion
-
-            var streamContent = new StreamContent(content)
-            {
-                ContentType = contentType
-            };
-
-            return Raw(HttpMethod.Delete, parameters, streamContent);
+            return Raw(HttpMethod.Delete, streamContent);
         }
 
         #endregion
@@ -3079,7 +1788,7 @@ namespace MVNet
         /// <returns>An object for downloading a response from an HTTP server.</returns>
         /// <exception cref="ArgumentNullException">If the 'Address' equals <see langword="null"/>.</exception>
         /// <exception cref="HttpException">Error while working with HTTP protocol.</exception>
-        public HttpResponse Raw(HttpMethod method, Parameters parameters = null, HttpContent content = null)
+        public HttpResponse Raw(HttpMethod method, HttpContent content = null)
         {
             #region Parameter Check
 
@@ -3090,13 +1799,6 @@ namespace MVNet
 
             var address = Address;
             var baseAddress = BaseAddress;
-
-            if (parameters != null && !string.IsNullOrEmpty(parameters?.Query))
-            {
-                var uriBuilder = new UriBuilder(address);
-                uriBuilder.Query = string.IsNullOrEmpty(uriBuilder.Query) ? parameters.Query : $"{uriBuilder.Query}&{parameters.Query}";
-                address = uriBuilder.Uri;
-            }
 
             if (!address.IsAbsoluteUri)
                 address = GetRequestAddress(baseAddress, address);
