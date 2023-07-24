@@ -1,4 +1,4 @@
-# MVNet
+# MVNet [![Nuget](https://img.shields.io/nuget/v/MVNet)](https://www.nuget.org/packages/MVNet/)
 **MVNet** - provides HTTP/HTTPS, Socks 4A, Socks 4, Socks 5, Azadi.  
 It's a based on [Leaf.xNet](https://github.com/csharp-leaf/Leaf.xNet). And original library [xNet](https://github.com/X-rus/xNet).  
 Usage same like original xNet.

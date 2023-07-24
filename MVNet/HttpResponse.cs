@@ -372,6 +372,8 @@ namespace MVNet
         /// <returns>The value of the header, if such a header is specified, otherwise the empty string.</returns>
         public string Location => this["Location"];
 
+        public KeyValuePair<string, string>[] Headers => _headers.ToArray();
+
         /// <summary>
         /// Returns the cookie generated as a result of the request, or set in <see cref="HttpRequest"/>.
         /// </summary>

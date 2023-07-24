@@ -7,7 +7,7 @@
     <AssemblyVersion></AssemblyVersion>
     <FileVersion></FileVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>2.3</Version>
+    <Version>2.4</Version>
     <PackageReadmeFile></PackageReadmeFile>
     <Authors>Soheil MV</Authors>
     <Company>MVSoft</Company>
