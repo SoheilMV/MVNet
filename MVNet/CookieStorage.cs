@@ -164,7 +164,15 @@ namespace MVNet
             keyValue[0] = keyValue[0].Trim();
             keyValue[1] = keyValue[1].Trim();
 
-            if (IgnoreInvalidCookie && (string.IsNullOrEmpty(keyValue[0]) || keyValue[0][0] == '$' || keyValue[0].IndexOfAny(ReservedChars) != -1)) return;
+            if (string.IsNullOrEmpty(keyValue[1]))
+            {
+                if (Contains(requestAddress, keyValue[0]))
+                    Remove(requestAddress, keyValue[0]);
+                return;
+            }
+
+            if (IgnoreInvalidCookie && (string.IsNullOrEmpty(keyValue[0]) || keyValue[0][0] == '$' || keyValue[0].IndexOfAny(ReservedChars) != -1))
+                return;
 
             var cookie = new Cookie(keyValue[0], keyValue.Length < 2 ? string.Empty
                 : EscapeValuesOnReceive ? Uri.EscapeDataString(keyValue[1]) : keyValue[1]
@@ -395,7 +403,7 @@ namespace MVNet
         public void SaveToFile(string filePath, bool overwrite = true)
         {
             if (!overwrite && File.Exists(filePath))
-                throw new ArgumentException(string.Format(Constants.CookieStorage_SaveToFile_FileAlreadyExists, filePath), nameof(filePath));
+                throw new ArgumentException(string.Format("Cookies file '${0}' already exists.", filePath), nameof(filePath));
 
             using (var fs = new FileStream(filePath, FileMode.OpenOrCreate))
                 Bf.Serialize(fs, this);
